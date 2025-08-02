@@ -1,0 +1,21 @@
+{
+  "name": "shist.fit-backend",
+  "version": "1.0.0",
+  "description": "Backend for the shist.fit",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev" : "nodemon src/app.js"
+  },
+  "keywords": [
+    "backend",
+    "shist.fit"
+  ],
+  "author": "Amrut Patil",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  }
+}
