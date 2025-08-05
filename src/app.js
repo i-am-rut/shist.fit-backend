@@ -1,16 +1,21 @@
 const express = require("express")
 const dotenv = require("dotenv")
+const connectToDB = require("./config/database")
 
-//load environment variables
 dotenv.config()
-//create server
 const app = express()
 
-app.use("/", (req, res) => {
-    res.send("This is a response")
+
+connectToDB()
+    .then(() => {
+        app.listen(process.env.PORT || 5000, () => {
+            console.log(`Listening on port: ${process.env.PORT}`)
+        })
+    }).catch(err => console.error("Error: ", err))
+
+
+app.get("/", (req, res) => {
+    res.status(200).json({message : "Hello from the server"})
 })
 
-//listen to the server requests 
-app.listen(process.env.PORT, ()=>{
-    console.log(`Shist.fit server is running on port:${process.env.PORT}`)
-})
+
