@@ -11,4 +11,8 @@ const validateSignUpData = (req) => {
     }
 }
 
-module.exports = {validateSignUpData}
+const validateGoalsInput = (calorie, water, weight, sleep, steps) => {
+    return calorie && water && weight && sleep && steps
+}
+
+module.exports = {validateSignUpData, validateGoalsInput}
