@@ -4,6 +4,7 @@ const connectToDB = require("./config/database")
 const cookieParser = require("cookie-parser")
 const authRoutes = require("./routes/authRoutes")
 const foodRoutes = require("./routes/foodRoutes")
+const sleepRoutes = require("./routes/sleepRoutes")
 
 dotenv.config()
 const app = express()
@@ -14,6 +15,7 @@ app.use(cookieParser())
 
 app.use('/auth', authRoutes)
 app.use("/food", foodRoutes)
+app.use("/sleep", sleepRoutes)
 
 connectToDB()
     .then(() => {
