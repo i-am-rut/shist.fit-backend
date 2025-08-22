@@ -8,6 +8,7 @@ const foodRoutes = require("./routes/foodRoutes")
 const sleepRoutes = require("./routes/sleepRoutes")
 const weightRoutes = require("./routes/weightRoutes")
 const goalRouter = require("./routes/goalRoutes")
+const waterRouter = require("./routes/waterRoutes")
 
 dotenv.config()
 const app = express()
@@ -25,6 +26,7 @@ app.use("/food", foodRoutes)
 app.use("/sleep", sleepRoutes)
 app.use('/weight', weightRoutes)
 app.use('/goals', goalRouter)
+app.use('/water', waterRouter)
 
 connectToDB()
     .then(() => {
