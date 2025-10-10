@@ -9,10 +9,12 @@ const stepsSchema = mongoose.Schema({
     steps: {
         type: Number,
         required: true,
+        default: 0,
     },
     date: {
         type: Date,
         default: Date.now,
+        required: true,
     },
 }, { timestamps: true })
 

@@ -51,7 +51,7 @@ const deleteSleepEntry = async (req, res) => {
             user: req.user._id
         })
 
-        if(!entry) res.status(404).json({message: "Entry not found"})
+        if(!entry) res.status(404).json({error: "Entry not found"})
 
         res.json({message: "Sleep entry deleted"})
 

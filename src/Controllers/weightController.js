@@ -45,7 +45,7 @@ const deleteWeightEntry = async (req, res) => {
             user: req.user._id
         })
 
-        if(!entry) return res.status(404).json({message: "Entry not found"})
+        if(!entry) return res.status(404).json({error: "Entry not found"})
         
         res.status(200).json({message: "Weight entry deleted"})
 

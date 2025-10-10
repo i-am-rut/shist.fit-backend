@@ -1,7 +1,9 @@
 const validator = require("validator")
 
 const validateSignUpData = (req) => {
-    const {name, email, password} = req.body
+    const {name, email, password, rePassword} = req.body
+    if(password !== rePassword) throw new Error("Passwords do not match.");
+    
     if(!name || name.length < 2) {
         throw new Error("Name is not valid.")
     } else if (!validator.isEmail(email)) {

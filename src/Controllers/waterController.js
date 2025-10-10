@@ -14,7 +14,7 @@ const logWater = async (req, res) => {
                 entry.glasses += glasses
             }else {
                 console.log(entry.glasses += glasses)
-                return res.status(400).json({message: 'Your water intake is getting more that 6 liters per day this may be harmful for your health.'})
+                return res.status(400).json({error: 'Your water intake is getting more that 6 liters per day this may be harmful for your health.'})
             }
         } else {
             entry = new WaterLog({user: userId, glasses, date:entryDate})
@@ -34,7 +34,7 @@ const getWaterLogs = async (req, res) => {
         const logs = await WaterLog.find({user: req.user._id}).sort({date: 1})
 
         if(logs.length === 0 || !logs) {
-            return res.status(404).json({message: "Logs do not exist"})
+            return res.status(404).json({error: "Logs do not exist"})
         }
 
         const formatted = logs.map(log => ({
@@ -58,7 +58,7 @@ const deleteWaterEntry = async (req, res) => {
     });
 
     if (!deleted) {
-      return res.status(404).json({ message: 'Water entry not found' });
+      return res.status(404).json({ error: 'Water entry not found' });
     }
 
     res.json({ message: 'Water entry deleted' });

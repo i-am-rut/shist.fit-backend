@@ -1,5 +1,11 @@
 const mongoose = require("mongoose")
 
+const macrosSchema = new mongoose.Schema({
+    protein: { type: Number, default: 0, min: 0 },
+    carbs: { type: Number, default: 0, min: 0 },
+    fats: { type: Number, default: 0, min: 0 },
+}, { _id: false }); 
+
 const foodEntrySchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -19,9 +25,14 @@ const foodEntrySchema = new mongoose.Schema({
         enum: ["Breakfast", "Lunch", "Snack", "Dinner"],
         default: "Breakfast",
     },
+    macros: {
+        type: macrosSchema,
+        default: () => ({protein: 0, carbs: 0, fats: 0})
+    },
     date: {
         type: Date,
         default: Date.now,
+        required: true,
     }
 }, { timestamps: true } )
 

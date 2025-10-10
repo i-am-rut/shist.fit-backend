@@ -2,14 +2,15 @@ const FoodEntry = require("../models/FoodEntry")
 
 const addFood = async(req, res) => {
     try {
-        const {food, calories, mealtype, date} = req.body
+        const {food, calories, mealtype, date, macros} = req.body
 
         const newEntry = new FoodEntry({
             user: req.user._id,
             food,
             calories,
             mealtype,
-            date
+            date,
+            macros: macros || {protein : 0, carbs: 0, fats: 0}
         })
 
         await newEntry.save()
@@ -50,7 +51,7 @@ const deleteFoodEntry = async (req, res) => {
             user: req.user._id
         })
 
-        if(!entry) return res.status(404).json({message: "Entry not found"})
+        if(!entry) return res.status(404).json({error: "Entry not found"})
         
         res.json({message: "Food entry deleted."})
     } catch (err) {
