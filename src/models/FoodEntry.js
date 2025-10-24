@@ -33,7 +33,18 @@ const foodEntrySchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
         required: true,
-    }
+    },
+      time: {
+        type: String,
+        // match: /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/,  
+        required: true
+    },
+    amount: {
+        type: Number,
+        default: 1,
+        required: true,
+        min: 0,
+    },
 }, { timestamps: true } )
 
 module.exports = mongoose.model('FoodEntry', foodEntrySchema)

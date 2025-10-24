@@ -1,22 +1,51 @@
 const FoodEntry = require("../models/FoodEntry")
+const getAccessToken = require('../utils/fatsecret')
+const axios = require('axios')
 
-const addFood = async(req, res) => {
+
+const addFood = async (req, res) => {
     try {
-        const {food, calories, mealtype, date, macros} = req.body
+        const { food_id, mealType, date, time, amount, servingIdx } = req.body;
+
+        const token = await getAccessToken();
+        const foodResponse = await axios.get("https://platform.fatsecret.com/rest/server.api", {
+            params: {
+                method: "food.get.v2",
+                food_id,
+                format: "json"
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const food = foodResponse.data.food;
+        const serving = food.servings.serving[0]; 
+
+        const macros = {
+            protein: parseFloat(serving.protein),
+            carbs: parseFloat(serving.carbohydrate),
+            fats: parseFloat(serving.fat)
+        };
+        const calories = parseFloat(serving.calories);
 
         const newEntry = new FoodEntry({
             user: req.user._id,
-            food,
+            food: food.food_name,
             calories,
-            mealtype,
+            mealType,
             date,
-            macros: macros || {protein : 0, carbs: 0, fats: 0}
-        })
+            time,
+            amount,
+            macros
+        });
 
-        await newEntry.save()
-        res.status(201).json({message: "Food entry added", entry: newEntry})
+        await newEntry.save();
+        res.status(201).json({ message: "Food entry added", entry: newEntry });
+
     } catch (err) {
-        res.status(500).json({message: "Failed to add food entry", error: err.message})
+        console.error(err);
+        res.status(500).json({ message: "Failed to add food entry", error: err.message });
     }
 }
 

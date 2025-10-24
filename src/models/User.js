@@ -39,6 +39,20 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        age: {
+            type: Number,
+            min: 5,
+            max: 120,
+        },
+        height: {
+            type: Number,
+            min: 50,
+            max: 300,
+        },
+        gender: {
+            type: String,
+            enum: ['Male', 'Female', 'Other', 'Prefer not to say']
+        }
     },
     {
         timestamps: true,

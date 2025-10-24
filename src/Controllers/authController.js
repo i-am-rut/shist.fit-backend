@@ -4,6 +4,7 @@ const {validateSignUpData} = require("../utils/validate");
 const { generateEmailToken } = require("../utils/token");
 const { sendVerificationEmail } = require('../utils/sendEmail')
 const { verifyEmailToken } = require("../utils/token");
+// const sendEmail = require('../utils/sendEmail')
 
 const verifyEmail = async (req, res) => {
   try {
@@ -44,6 +45,7 @@ const register = async (req, res) => {
         // const token = generateEmailToken(email);
 
         // await sendVerificationEmail(email, token);
+        // const emailRes = await sendEmail.run()
 
         res.status(201).json({ message: "User registered. Verification email sent."});
     } catch (err) {
