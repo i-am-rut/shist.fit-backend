@@ -1,0 +1,25 @@
+const Feedback = require('../models/Feedback');
+
+const sendFeedback = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { message } = req.body;
+
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ error: "Feedback message is required." });
+        }
+
+        const feedback = new Feedback({
+            user: userId,
+            message: message.trim(),
+        });
+
+        await feedback.save();
+
+        res.status(201).json({ message: "Feedback submitted successfully.", feedback });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { sendFeedback };

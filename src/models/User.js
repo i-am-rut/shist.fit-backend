@@ -52,7 +52,21 @@ const userSchema = new mongoose.Schema(
         gender: {
             type: String,
             enum: ['Male', 'Female', 'Other', 'Prefer not to say']
-        }
+        },
+        heartrate: {
+            type: Number,
+            min: 0,
+            max: 300,
+        },
+        streak: {
+            type: Number,
+            min: 0,
+            default: 0,
+        },
+        isActive: {
+            type: Boolean,
+            default: true,
+        },
     },
     {
         timestamps: true,

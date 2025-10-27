@@ -63,71 +63,208 @@ const getStepsByDate = async (req, res) => {
     }
 }
 
+// const getStepsByRange = async (req, res) => {
+//     try {
+//         const { range } = req.query
+//         const userId = req.user._id
+
+//         let startDate, endDate
+//         const now = new Date()
+
+//         switch (range) {
+//             case 'today':
+//                 startDate = new Date(now)
+//                 startDate.setHours(0, 0, 0, 0)
+//                 endDate = new Date(now)
+//                 endDate.setHours(23, 59, 59, 999)
+//                 break
+
+//             case 'week':
+//                 const dayOfWeek = now.getDay() // 0 (Sun) to 6 (Sat)
+//                 const monday = new Date(now)
+//                 monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7))
+//                 monday.setHours(0, 0, 0, 0)
+//                 startDate = monday
+
+//                 const sunday = new Date(monday)
+//                 sunday.setDate(monday.getDate() + 6)
+//                 sunday.setHours(23, 59, 59, 999)
+//                 endDate = sunday
+//                 break
+
+//             case 'month':
+//                 startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+//                 endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+//                 break
+
+//             case 'past7days':
+//                 endDate = new Date(now)
+//                 endDate.setHours(23, 59, 59, 999)
+//                 startDate = new Date(now)
+//                 startDate.setDate(now.getDate() - 6)
+//                 startDate.setHours(0, 0, 0, 0)
+//                 break
+
+//             default:
+//                 return res.status(400).json({ error: "Invalid range parameter. Use one of: today, week, month, past7days" })
+//         }
+
+//         const steps = await Steps.find({
+//             user: userId,
+//             date: { $gte: startDate, $lte: endDate }
+//         }).sort({ date: 1 })
+
+//         res.status(200).json({
+//             steps,
+//             range,
+//             from: startDate,
+//             to: endDate
+//         })
+
+//     } catch (err) {
+//         res.status(500).json({ message: "Failed to fetch steps", error: err.message })
+//     }
+// }
+
+const getTotalStepsPast7Days = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 6); // past 7 days including today
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date(today);
+        endDate.setHours(23, 59, 59, 999);
+
+        const stepsEntries = await Steps.find({
+            user: userId,
+            date: { $gte: startDate, $lte: endDate }
+        });
+
+        // Map entries by date
+        const stepsMap = {};
+        stepsEntries.forEach(entry => {
+            const dateKey = entry.date.toISOString().split('T')[0];
+            stepsMap[dateKey] = entry.steps;
+        });
+
+        // Sum total steps over past 7 days, counting 0 for missing days
+        let totalSteps = 0;
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+            const dateKey = date.toISOString().split('T')[0];
+            totalSteps += stepsMap[dateKey] || 0;
+        }
+
+        res.status(200).json({ totalSteps, from: startDate, to: endDate });
+
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch total steps for past 7 days", error: err.message });
+    }
+};
+
+
 const getStepsByRange = async (req, res) => {
     try {
-        const { range } = req.query
-        const userId = req.user._id
+        const { range } = req.query;
+        const userId = req.user._id;
 
-        let startDate, endDate
-        const now = new Date()
+        let startDate, endDate;
+        const now = new Date();
 
         switch (range) {
             case 'today':
-                startDate = new Date(now)
-                startDate.setHours(0, 0, 0, 0)
-                endDate = new Date(now)
-                endDate.setHours(23, 59, 59, 999)
-                break
+                startDate = new Date(now);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                break;
 
             case 'week':
-                const dayOfWeek = now.getDay() // 0 (Sun) to 6 (Sat)
-                const monday = new Date(now)
-                monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7))
-                monday.setHours(0, 0, 0, 0)
-                startDate = monday
+                const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+                monday.setHours(0, 0, 0, 0);
+                startDate = monday;
 
-                const sunday = new Date(monday)
-                sunday.setDate(monday.getDate() + 6)
-                sunday.setHours(23, 59, 59, 999)
-                endDate = sunday
-                break
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                sunday.setHours(23, 59, 59, 999);
+                endDate = sunday;
+                break;
 
             case 'month':
-                startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
-                break
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                break;
 
             case 'past7days':
-                endDate = new Date(now)
-                endDate.setHours(23, 59, 59, 999)
-                startDate = new Date(now)
-                startDate.setDate(now.getDate() - 6)
-                startDate.setHours(0, 0, 0, 0)
-                break
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                startDate = new Date(now);
+                startDate.setDate(now.getDate() - 6);
+                startDate.setHours(0, 0, 0, 0);
+                break;
 
             default:
-                return res.status(400).json({ error: "Invalid range parameter. Use one of: today, week, month, past7days" })
+                return res.status(400).json({ error: "Invalid range parameter. Use one of: today, week, month, past7days" });
         }
 
-        const steps = await Steps.find({
+        const stepsEntries = await Steps.find({
             user: userId,
             date: { $gte: startDate, $lte: endDate }
-        }).sort({ date: 1 })
+        }).sort({ date: 1 });
+
+        // Generate array of dates between startDate and endDate (inclusive)
+        const dateArray = [];
+        for (
+            let d = new Date(startDate);
+            d <= endDate;
+            d.setDate(d.getDate() + 1)
+        ) {
+            dateArray.push(new Date(d)); // clone date
+        }
+
+        // Map steps entries by date string for easy lookup
+        const stepsMap = {};
+        stepsEntries.forEach(entry => {
+            const dateKey = entry.date.toISOString().split('T')[0];
+            stepsMap[dateKey] = entry;
+        });
+
+        // Build result array with steps or zero for missing days
+        const steps = dateArray.map(dateObj => {
+            const dateKey = dateObj.toISOString().split('T')[0];
+            if (stepsMap[dateKey]) {
+                return {
+                    _id: stepsMap[dateKey]._id,
+                    date: dateKey,
+                    steps: stepsMap[dateKey].steps
+                };
+            } else {
+                return {
+                    _id: null,
+                    date: dateKey,
+                    steps: 0
+                };
+            }
+        });
 
         res.status(200).json({
             steps,
             range,
             from: startDate,
             to: endDate
-        })
-
+        });
     } catch (err) {
-        res.status(500).json({ message: "Failed to fetch steps", error: err.message })
+        res.status(500).json({ message: "Failed to fetch steps", error: err.message });
     }
 }
 
 module.exports = {
     addSteps,
     getStepsByDate,
-    getStepsByRange
+    getStepsByRange, getTotalStepsPast7Days
 }

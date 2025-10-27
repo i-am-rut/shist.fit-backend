@@ -98,8 +98,11 @@ const login = async(req, res) => {
             
         //     return res.status(403).json({error: 'Verify your email'})
         // }
+        if (!user.isActive) {
+            return res.status(403).json({ error: "Account has been deactivated." });
+        }
         const isPasswordValid = await user.validatePassword(password)
-
+        const [_id, name, isEmailVerified, age, height, streak, heartrate, gender] = user
         if(isPasswordValid) {
             const token = await user.getJWT()
             res.cookie("token", token, {
@@ -113,10 +116,15 @@ const login = async(req, res) => {
                 message: "Login successful",
                 accessToken: token,
                 user: {
-                    id: user._id,
-                    name: user.name,
+                    id: _id,
+                    name,
                     email: user.email,
-                    isEmailVerified: user.isEmailVerified,
+                    isEmailVerified,
+                    age,
+                    height,
+                    streak,
+                    heartrate,
+                    gender
                 },
             });
         }else {
@@ -140,4 +148,72 @@ const logout = async(req, res) => {
     }
 }
 
-module.exports = {verifyEmail, register, login, logout, resendVerificationEmailLink}
+const changePassword = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        // 1. Validate input
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ message: "All fields are required." });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: "New password and confirmation do not match." });
+        }
+
+        // 2. Get user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // 3. Compare current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Current password is incorrect." });
+        }
+
+        // 4. Hash new password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+
+        await user.save();
+
+        res.status(200).json({ message: "Password changed successfully." });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to change password.", error: err.message });
+    }
+};
+
+const deleteAccount = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (!user.isActive) {
+            return res.status(400).json({ error: "Account is already deactivated." });
+        }
+
+        // Soft-delete: set isActive to false
+        user.isActive = false;
+        await user.save();
+
+        // Optionally, clear auth cookies
+        res.clearCookie("token");
+
+        res.status(200).json({ message: "Account has been successfully deactivated." });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+module.exports = {verifyEmail, register, login, logout, resendVerificationEmailLink, changePassword, deleteAccount}

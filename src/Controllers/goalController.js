@@ -50,26 +50,37 @@ const setGoals = async (req, res) => {
 
 const updateGoals = async (req, res) => {
     try {
-        
-        const {calorie, water, weight, sleep, steps} = req.body
+        const userId = req.user._id;
+        const { calorie, water, weight, sleep, steps } = req.body;
 
-        const goal = await Goals.findOne({user: req.user._id})
+        // Find the user's goals
+        const goals = await Goals.findOne({ user: userId });
 
-        if(!goal) return res.status(404).json({message: "Goals not found"})
+        if (!goals) {
+            return res.status(404).json({ error: "Goals not found. Please create them first." });
+        }
 
-        goal.calorie = calorie ?? goal.calorie
-        goal.water = water ?? goal.water
-        goal.weight = weight ?? goal.weight
-        goal.sleep = sleep ?? goal.sleep
-        goal.steps = steps ?? goal.steps
+        // Update only the provided fields
+        if (calorie !== undefined) goals.calorie = calorie;
+        if (water !== undefined) goals.water = water;
+        if (weight !== undefined) goals.weight = weight;
+        if (sleep !== undefined) goals.sleep = sleep;
+        if (steps !== undefined) goals.steps = steps;
 
-        await goal.save()
+        await goals.save();
 
-        res.status(200).json({message: 'Goals updated', goal})
-
+        res.status(200).json({
+            message: "Goals updated successfully",
+            goals
+        });
     } catch (err) {
-        res.status(500).json({message: "Failed to update goals", error: err.message})
+        console.error(err);
+        res.status(500).json({
+            message: "Failed to update goals",
+            error: err.message
+        });
     }
-}
+};
+
 
 module.exports = {getGoals, setGoals, updateGoals}
