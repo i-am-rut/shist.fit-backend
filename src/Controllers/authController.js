@@ -102,7 +102,7 @@ const login = async(req, res) => {
             return res.status(403).json({ error: "Account has been deactivated." });
         }
         const isPasswordValid = await user.validatePassword(password)
-        const [_id, name, isEmailVerified, age, height, streak, heartrate, gender] = user
+        const {_id, name, isEmailVerified, age, height, streak, heartrate, gender} = user
         if(isPasswordValid) {
             const token = await user.getJWT()
             res.cookie("token", token, {
