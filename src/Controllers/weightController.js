@@ -6,7 +6,7 @@ const addWeight = async (req, res) => {
         const { weight, date } = req.body;
         const entryDate = date ? new Date(date) : new Date();
 
-        // Step 1: Save the new weight entry
+        
         const newWeight = new WeightEntry({
             user: req.user._id,
             weight,
@@ -15,14 +15,19 @@ const addWeight = async (req, res) => {
 
         await newWeight.save();
 
-        // Step 2: Send success response immediately
+        // if this is the user's first weight entry
+        const weightCount = await WeightEntry.countDocuments({ user: req.user._id });
+        if (weightCount === 1) {
+            await User.findByIdAndUpdate(req.user._id, { weight });
+        }
+
         res.status(201).json({
             message: "Weight entry added successfully.",
             entry: newWeight
         });
 
-        // Step 3: Run maintenance asynchronously (no blocking)
-        maintainWeightEntries(req.user._id).catch(err =>
+        // Asynchronously
+        weightCount !== 1 && maintainWeightEntries(req.user._id).catch(err =>
             console.error("Background weight maintenance failed:", err.message)
         );
 
@@ -57,7 +62,7 @@ const getWeightEntries = async (req, res) => {
 const getCurrentWeight = async (req, res) => {
     try {
         const latestEntry = await WeightEntry.findOne({ user: req.user._id })
-            .sort({ date: -1 }); // newest first
+            .sort({ date: -1 });
 
         if (!latestEntry) {
             return res.status(404).json({ message: "No weight entries found." });
@@ -77,14 +82,13 @@ const getWeightPast7Days = async (req, res) => {
     try {
         const today = new Date();
         const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(today.getDate() - 6); // include today
+        sevenDaysAgo.setDate(today.getDate() - 6); // include today hence 6
 
         const entries = await WeightEntry.find({
             user: req.user._id,
             date: { $gte: sevenDaysAgo, $lte: today }
         }).sort({ date: 1 });
 
-        // Get the most recent known weight before the 7-day window (to fill early gaps)
         let lastKnown = await WeightEntry.findOne({
             user: req.user._id,
             date: { $lt: sevenDaysAgo }

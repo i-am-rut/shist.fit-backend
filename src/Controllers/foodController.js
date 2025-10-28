@@ -1,4 +1,5 @@
-const FoodEntry = require("../models/FoodEntry")
+const FoodEntry = require("../models/FoodEntry");
+const User = require("../models/User");
 const getAccessToken = require('../utils/fatsecret')
 const axios = require('axios')
 
@@ -21,19 +22,19 @@ const addFood = async (req, res) => {
 
         const food = foodResponse.data.food;
 
-        // Handle servings
+        // Handle the choice of servings
         const servings = Array.isArray(food.servings.serving)
             ? food.servings.serving
             : [food.servings.serving];
         const serving = servings[servingIdx] || servings[0];
 
-        // Base values
+        // Base values setting
         const baseCalories = parseFloat(serving.calories) || 0;
         const baseProtein = parseFloat(serving.protein) || 0;
         const baseCarbs = parseFloat(serving.carbohydrate) || 0;
         const baseFats = parseFloat(serving.fat) || 0;
 
-        // Scale by amount
+        // Scale macros by the amount
         const calories = baseCalories * amount;
         const macros = {
             protein: baseProtein * amount,
@@ -41,7 +42,6 @@ const addFood = async (req, res) => {
             fats: baseFats * amount
         };
 
-        // Save new food entry
         const newEntry = new FoodEntry({
             user: req.user._id,
             food: food.food_name,
@@ -55,7 +55,7 @@ const addFood = async (req, res) => {
 
         await newEntry.save();
 
-        // ✅ Handle streak logic
+        // streak logic
         const user = await User.findById(req.user._id);
         if (user) {
             const today = new Date();
@@ -64,7 +64,7 @@ const addFood = async (req, res) => {
             const yesterday = new Date(today);
             yesterday.setDate(today.getDate() - 1);
 
-            // Find the most recent food log before today
+            // Finding the most recent food log before today
             const lastLog = await FoodEntry.findOne({
                 user: user._id,
                 date: { $lt: today }
@@ -89,7 +89,7 @@ const addFood = async (req, res) => {
                 }
             }
 
-            // Check if already logged today (to prevent multiple increments)
+            // Check to prevent multiple increments
             const loggedToday = await FoodEntry.findOne({
                 user: user._id,
                 date: { $gte: today }
@@ -101,7 +101,7 @@ const addFood = async (req, res) => {
             } else if (shouldIncrease && !loggedToday._id.equals(newEntry._id)) {
                 user.streak += 1;
             } else if (shouldReset) {
-                user.streak = 1; // Restart streak since today’s log resumes it
+                user.streak = 1; 
             }
 
             await user.save();
@@ -188,18 +188,16 @@ const getTodayFood = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        // Get start and end of today
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
 
-        // Find today's food entries
         const todaysEntries = await FoodEntry.find({
             user: userId,
             date: { $gte: startOfDay, $lte: endOfDay }
-        }).sort({ time: 1 }); // Sort by time ascending (breakfast → dinner)
+        }).sort({ time: 1 }); // Sort by time ascending 
 
         res.status(200).json({
             date: startOfDay.toISOString().split("T")[0],

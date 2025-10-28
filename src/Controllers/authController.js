@@ -71,10 +71,8 @@ const resendVerificationEmailLink = async (req, res) => {
             return res.status(400).json({ error: "Email is already verified." });
         }
 
-        // Generate a new verification token
         const token = generateEmailToken(email);
 
-        // Send verification email
         await sendVerificationEmail(email, token);
 
         return res.status(200).json({ message: "Verification email sent." });
@@ -151,30 +149,26 @@ const logout = async(req, res) => {
 const changePassword = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { currentPassword, newPassword, confirmPassword } = req.body;
+        const { password, newPassword, reNewPassword } = req.body;
 
-        // 1. Validate input
-        if (!currentPassword || !newPassword || !confirmPassword) {
+        if (!password || !newPassword || !reNewPassword) {
             return res.status(400).json({ message: "All fields are required." });
         }
 
-        if (newPassword !== confirmPassword) {
+        if (newPassword !== reNewPassword) {
             return res.status(400).json({ message: "New password and confirmation do not match." });
         }
 
-        // 2. Get user
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
 
-        // 3. Compare current password
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Current password is incorrect." });
         }
 
-        // 4. Hash new password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
 
@@ -201,15 +195,13 @@ const deleteAccount = async (req, res) => {
             return res.status(400).json({ error: "Account is already deactivated." });
         }
 
-        // Soft-delete: set isActive to false
+        
         user.isActive = false;
         await user.save();
 
-        // Optionally, clear auth cookies
         res.clearCookie("token");
-
         res.status(200).json({ message: "Account has been successfully deactivated." });
-
+        
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

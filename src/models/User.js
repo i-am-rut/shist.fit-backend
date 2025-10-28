@@ -67,6 +67,11 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        weight: {
+            type: Number,
+            min: 1,
+            max: 600,
+        },
     },
     {
         timestamps: true,

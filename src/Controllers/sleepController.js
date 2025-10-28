@@ -1,4 +1,3 @@
-const requireAuth = require("../middlewares/authMiddleware")
 const SleepEntry = require("../models/SleepEntry")
 
 const addSleep = async (req, res) => {
@@ -44,27 +43,36 @@ const getSleepEntries = async(req, res) => {
 }
 
 const getLastNightSleepEntry = async (req, res) => {
-    try {
-        // Find the most recent sleep entry, sorted by sleepStart descending (latest first)
-        const lastEntry = await SleepEntry.findOne({ user: req.user._id }).sort({ sleepStart: -1 });
+  try {
+    const today = new Date();
 
-        if (!lastEntry) {
-            return res.status(404).json({ message: "No sleep entries found." });
-        }
+    const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+    const endOfToday = new Date(today.setHours(23, 59, 59, 999));
 
-        // Format the entry before sending
-        const formattedEntry = {
-            _id: lastEntry._id,
-            sleepStart: lastEntry.sleepStart,
-            sleepEnd: lastEntry.sleepEnd,
-            duration: lastEntry.duration.toFixed(2),
-            date: lastEntry.date.toISOString().split('T')[0]
-        };
+    const lastEntry = await SleepEntry.findOne({
+      user: req.user._id,
+      sleepEnd: { $gte: startOfToday, $lte: endOfToday },
+    }).sort({ sleepEnd: -1 });
 
-        res.status(200).json(formattedEntry);
-    } catch (err) {
-        res.status(500).json({ message: "Failed to fetch last sleep entry", error: err.message });
+    if (!lastEntry) {
+      return res.status(404).json({ message: "No sleep entry found for today." });
     }
+
+    const formattedEntry = {
+      _id: lastEntry._id,
+      sleepStart: lastEntry.sleepStart,
+      sleepEnd: lastEntry.sleepEnd,
+      duration: lastEntry.duration.toFixed(2),
+      date: lastEntry.date.toISOString().split("T")[0],
+    };
+
+    res.status(200).json(formattedEntry);
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to fetch last sleep entry",
+      error: err.message,
+    });
+  }
 };
 
 const getSleepPast7Days = async (req, res) => {
@@ -85,14 +93,12 @@ const getSleepPast7Days = async (req, res) => {
             sleepStart: { $gte: sevenDaysAgo }
         }).sort({ sleepStart: -1 });
 
-        // Create a map of date string to entry
         const entryMap = {};
         entries.forEach(entry => {
             const dateKey = entry.date.toISOString().split('T')[0];
             entryMap[dateKey] = entry;
         });
 
-        // Build results array with entries or zeros
         const results = days.map(dateStr => {
             if (entryMap[dateStr]) {
                 const entry = entryMap[dateStr];
@@ -104,7 +110,6 @@ const getSleepPast7Days = async (req, res) => {
                     date: dateStr
                 };
             } else {
-                // No sleep entry logged this day
                 return {
                     _id: null,
                     sleepStart: null,

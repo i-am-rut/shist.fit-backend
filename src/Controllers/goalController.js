@@ -53,14 +53,12 @@ const updateGoals = async (req, res) => {
         const userId = req.user._id;
         const { calorie, water, weight, sleep, steps } = req.body;
 
-        // Find the user's goals
         const goals = await Goals.findOne({ user: userId });
 
         if (!goals) {
             return res.status(404).json({ error: "Goals not found. Please create them first." });
         }
 
-        // Update only the provided fields
         if (calorie !== undefined) goals.calorie = calorie;
         if (water !== undefined) goals.water = water;
         if (weight !== undefined) goals.weight = weight;

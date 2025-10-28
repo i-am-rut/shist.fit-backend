@@ -12,7 +12,6 @@ const logWater = async (req, res) => {
         const entryDate = date ? new Date(date) : new Date();
         entryDate.setHours(0, 0, 0, 0);
 
-        // First, find if there's an existing log
         const existing = await WaterLog.findOne({ user: userId, date: entryDate });
 
         if (existing) {
@@ -23,7 +22,6 @@ const logWater = async (req, res) => {
                 });
             }
 
-            // Atomic increment update
             const updated = await WaterLog.findOneAndUpdate(
                 { user: userId, date: entryDate },
                 { $inc: { glasses } },
@@ -83,7 +81,6 @@ const getTodaysWater = async (req, res) => {
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
 
-        // Find today’s log
         const log = await WaterLog.findOne({
             user: userId,
             date: { $gte: today, $lt: tomorrow }
@@ -112,22 +109,19 @@ const getPast7DaysWater = async (req, res) => {
         today.setHours(0, 0, 0, 0);
 
         const startDate = new Date(today);
-        startDate.setDate(today.getDate() - 6); // 7 days including today
+        startDate.setDate(today.getDate() - 6); 
 
-        // Fetch logs for past 7 days
         const logs = await WaterLog.find({
             user: userId,
             date: { $gte: startDate, $lte: today }
         }).sort({ date: 1 });
 
-        // Map logs by date string
         const logMap = {};
         logs.forEach(log => {
             const dateKey = new Date(log.date).toISOString().split("T")[0];
             logMap[dateKey] = log.glasses;
         });
 
-        // Generate list of last 7 days and fill missing with 0
         const result = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(startDate);

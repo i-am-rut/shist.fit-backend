@@ -13,7 +13,7 @@ const feedbackSchema = new mongoose.Schema({
         trim: true,
     },
 }, {
-    timestamps: true, // automatically adds createdAt and updatedAt
+    timestamps: true,
 });
 
 module.exports = mongoose.model('Feedback', feedbackSchema);

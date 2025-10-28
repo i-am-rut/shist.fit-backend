@@ -1,15 +1,13 @@
 const User = require("../models/User");
 
-// POST - Create user profile fields (only if they are not set)
 const createUserProfile = async (req, res) => {
     try {
         const { age, gender, height, heartrate } = req.body;
 
-        // Find user
+        
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ message: "User not found." });
 
-        // Check if any profile field already exists - to prevent overwriting via POST
         if (
             user.age !== undefined || 
             user.gender !== undefined || 
@@ -18,8 +16,6 @@ const createUserProfile = async (req, res) => {
         ) {
             return res.status(400).json({ message: "Profile data already exists. Use PATCH to update." });
         }
-
-        // Validate inputs (example validations)
         if (age && (age < 5 || age > 120)) {
             return res.status(400).json({ message: "Age must be between 5 and 120." });
         }
@@ -36,7 +32,6 @@ const createUserProfile = async (req, res) => {
             return res.status(400).json({ message: "Invalid gender value." });
         }
 
-        // Update user profile
         user.age = age;
         user.gender = gender;
         user.height = height;
@@ -52,12 +47,11 @@ const createUserProfile = async (req, res) => {
     }
 };
 
-// PATCH - Update user profile fields partially
+
 const updateUserProfile = async (req, res) => {
     try {
         const { age, gender, height, heartrate } = req.body;
 
-        // Build an update object only with fields that exist in the body
         const updateFields = {};
 
         if (age !== undefined) {

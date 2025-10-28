@@ -131,7 +131,7 @@ const getTotalStepsPast7Days = async (req, res) => {
         const userId = req.user._id;
         const today = new Date();
         const startDate = new Date(today);
-        startDate.setDate(today.getDate() - 6); // past 7 days including today
+        startDate.setDate(today.getDate() - 6); 
         startDate.setHours(0, 0, 0, 0);
 
         const endDate = new Date(today);
@@ -142,14 +142,12 @@ const getTotalStepsPast7Days = async (req, res) => {
             date: { $gte: startDate, $lte: endDate }
         });
 
-        // Map entries by date
         const stepsMap = {};
         stepsEntries.forEach(entry => {
             const dateKey = entry.date.toISOString().split('T')[0];
             stepsMap[dateKey] = entry.steps;
         });
 
-        // Sum total steps over past 7 days, counting 0 for missing days
         let totalSteps = 0;
         for (let i = 0; i < 7; i++) {
             const date = new Date(startDate);
@@ -183,7 +181,7 @@ const getStepsByRange = async (req, res) => {
                 break;
 
             case 'week':
-                const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+                const dayOfWeek = now.getDay(); // (0 Sun) to (6 Sat)
                 const monday = new Date(now);
                 monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
                 monday.setHours(0, 0, 0, 0);
@@ -217,24 +215,21 @@ const getStepsByRange = async (req, res) => {
             date: { $gte: startDate, $lte: endDate }
         }).sort({ date: 1 });
 
-        // Generate array of dates between startDate and endDate (inclusive)
         const dateArray = [];
         for (
             let d = new Date(startDate);
             d <= endDate;
             d.setDate(d.getDate() + 1)
         ) {
-            dateArray.push(new Date(d)); // clone date
+            dateArray.push(new Date(d));
         }
 
-        // Map steps entries by date string for easy lookup
         const stepsMap = {};
         stepsEntries.forEach(entry => {
             const dateKey = entry.date.toISOString().split('T')[0];
             stepsMap[dateKey] = entry;
         });
 
-        // Build result array with steps or zero for missing days
         const steps = dateArray.map(dateObj => {
             const dateKey = dateObj.toISOString().split('T')[0];
             if (stepsMap[dateKey]) {
