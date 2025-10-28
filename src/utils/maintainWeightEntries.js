@@ -1,3 +1,5 @@
+const WeightEntry = require('../models/WeigthEntry')
+
 const maintainWeightEntries = async (userId) => {
     const entries = await WeightEntry.find({ user: userId }).sort({ date: 1 });
     if (entries.length < 2) return;

@@ -1,5 +1,6 @@
 const WeightEntry = require("../models/WeigthEntry");
 const maintainWeightEntries = require("../utils/maintainWeightEntries");
+const User = require('../models/User')
 
 const addWeight = async (req, res) => {
     try {
@@ -112,7 +113,7 @@ const getWeightPast7Days = async (req, res) => {
 
             result.push({
                 date: key,
-                weight: lastKnown ? lastKnown.weight : null
+                weight: lastKnown ? lastKnown.weight : 0
             });
         }
 

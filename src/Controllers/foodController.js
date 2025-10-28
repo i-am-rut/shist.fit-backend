@@ -55,7 +55,6 @@ const addFood = async (req, res) => {
 
         await newEntry.save();
 
-        // streak logic
         const user = await User.findById(req.user._id);
         if (user) {
             const today = new Date();
@@ -64,7 +63,6 @@ const addFood = async (req, res) => {
             const yesterday = new Date(today);
             yesterday.setDate(today.getDate() - 1);
 
-            // Finding the most recent food log before today
             const lastLog = await FoodEntry.findOne({
                 user: user._id,
                 date: { $lt: today }
