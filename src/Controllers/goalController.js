@@ -5,7 +5,9 @@ const getGoals = async (req, res) => {
     try {
         const goal = await Goals.find({user: req.user._id})
 
-        if(!goal) return res.status(404).json({error: "Goals not set"})
+        if (!goals || goals.length === 0) {
+            return res.status(404).json({ error: "Goals not set" })
+        }
         
         res.status(200).json(goal)
 
@@ -40,7 +42,7 @@ const setGoals = async (req, res) => {
                 return res.status(400).json({error: "All fields are mandatory"})
             }
         } else {
-            return res.status(400).json({error: "Goals are set already!"})
+            return res.status(400).json(null)
         }
 
     } catch (err) {
