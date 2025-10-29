@@ -5,7 +5,7 @@ const getGoals = async (req, res) => {
     try {
         const goal = await Goals.find({user: req.user._id})
 
-        if (!goals || goals.length === 0) {
+        if (!goal || goal.length === 0) {
             return res.status(404).json({ error: "Goals not set" })
         }
         
