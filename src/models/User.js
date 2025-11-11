@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema(
             type: Number,
             min: 50,
             max: 300,
+            default: 170,
         },
         gender: {
             type: String,
@@ -57,6 +58,7 @@ const userSchema = new mongoose.Schema(
             type: Number,
             min: 0,
             max: 300,
+            dafault: 0,
         },
         streak: {
             type: Number,
@@ -71,6 +73,12 @@ const userSchema = new mongoose.Schema(
             type: Number,
             min: 1,
             max: 600,
+        },
+        bmi: {
+            type: Number,
+            min : 0,
+            max: 50,
+            default: 0,
         },
     },
     {

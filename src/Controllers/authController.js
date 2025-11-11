@@ -106,7 +106,7 @@ const login = async(req, res) => {
             res.cookie("token", token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                // sameSite: "Lax",
+                sameSite: "lax",
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             });
 
@@ -131,6 +131,20 @@ const login = async(req, res) => {
         
     } catch (err) {
         res.status(500).json({error: err.message})
+    }
+}
+
+const getUser = async(req, res) => {
+    const userid = req.user._id
+
+    try {
+        const user = await User.findById(userid).select('-password -createdAt -updatedAt -__v')
+        if(!user) {
+            return res.status(404).json({message: 'User not found'})
+        }
+        return res.status(200).json(user)
+    } catch(err) {
+        return res.status(500).json({error : err.message})
     }
 }
 
@@ -208,4 +222,4 @@ const deleteAccount = async (req, res) => {
 };
 
 
-module.exports = {verifyEmail, register, login, logout, resendVerificationEmailLink, changePassword, deleteAccount}
+module.exports = {verifyEmail, register, login, getUser, logout, resendVerificationEmailLink, changePassword, deleteAccount}

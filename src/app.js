@@ -13,6 +13,7 @@ const stepsRouter = require('./routes/stepsRouter')
 const userRouter = require('./routes/userRouter')
 const feedbackRouter = require('./routes/feedbackRoutes')
 const fatSecretRouter = require('./routes/fatSecretRoutes')
+const bmiRouter = require('./routes/bmiRoutes')
 
 dotenv.config()
 const app = express()
@@ -35,10 +36,11 @@ app.use('/steps', stepsRouter)
 app.use('/foods', fatSecretRouter)
 app.use('/user', userRouter)
 app.use('/feedback', feedbackRouter)
+app.use('/bmi', bmiRouter)
 
 connectToDB()
     .then(() => {
-        app.listen(process.env.PORT || 5000, () => {
+        app.listen(process.env.PORT || 1618, () => {
             console.log(`Listening on port: ${process.env.PORT}`)
         })
     }).catch(err => console.error("Error: ", err))

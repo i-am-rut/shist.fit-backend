@@ -13,7 +13,7 @@ const requireAuth = (req, res, next) => {
   }
 
   if (!token) {
-    return res.status(401).json({ error: "Not authorized" });
+    return res.status(401).json({ error: "Not authorized / token expired" });
   }
 
   try {
@@ -21,6 +21,14 @@ const requireAuth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      res.clearCookie("token", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      });
+      return res.status(401).json({ error: "Session expired, please log in again" });
+    }
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 };

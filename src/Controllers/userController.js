@@ -90,7 +90,7 @@ const updateUserProfile = async (req, res) => {
             req.user._id,
             updateFields,
             { new: true, runValidators: true }
-        );
+        ).select('-password - createdAt -updatedAt -__v');
 
         if (!updatedUser) return res.status(404).json({ message: "User not found." });
 
@@ -102,4 +102,4 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
-module.exports = { updateUserProfile, createUserProfile}
+module.exports = { updateUserProfile, createUserProfile }
